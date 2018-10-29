@@ -41,22 +41,31 @@ module Locomotive
 
         # sanitize the options
         options[:format]  = options[:format].gsub(/[\'\"]/, '').to_sym if options.has_key?(:format)
+
         if options[:with_user_agent]
           user_agent = { 'User-Agent' => 'LocomotiveCMS' }
           options[:headers] ? options[:headers].merge!(user_agent) : options[:headers] = user_agent
         end
 
-        response        = self.class.get(path, options)
-        parsed_response = response.parsed_response
+        response = self.class.get(path, options)
 
-        if response.code == 200
-          HashConverter.to_underscore(parsed_response)
-        else
-          Locomotive::Common::Logger.error "[WebService] consumed #{path}, #{options.inspect}, response = #{response.inspect}"
+        begin
+
+          parsed_response = response.parsed_response
+
+          if response.code == 200
+            HashConverter.to_underscore(parsed_response)
+          else
+            Locomotive::Common::Logger.error "[WebService] consumed #{path}, #{options.inspect}, response = #{response.inspect}"
+            nil
+          end
+
+        rescue MultiXml::ParseError
+          Locomotive::Common::Logger.error "[WebService] consumed #{path}, #{options.inspect}, responsded with wrong format"
           nil
         end
-      end
 
+      end
     end
   end
 end
