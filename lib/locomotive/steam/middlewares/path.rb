@@ -24,6 +24,9 @@ module Locomotive::Steam
 
         path = 'index' if path.blank?
 
+        # We bypass this routes buscador/* to handle them inside the finderSPA
+        path = 'buscador' if path.include?("buscador")
+
         env['steam.path'] = path
       end
 
